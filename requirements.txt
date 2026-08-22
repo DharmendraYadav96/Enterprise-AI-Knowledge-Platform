@@ -1,2 +1,6 @@
 Flask
 python-dotenv
+pytest
+pypdf
+python-docx
+
