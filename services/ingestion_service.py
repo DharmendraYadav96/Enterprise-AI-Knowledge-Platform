@@ -5,6 +5,8 @@ from ingestion.text_cleaner import TextCleaner
 from ingestion.chunker import DocumentChunker
 from utils.exceptions import ApplicationError
 from utils.logger import setup_logger
+from services.embedding_service import EmbeddingService
+from services.vector_store import VectorStore
 
 
 class IngestionService:
@@ -14,6 +16,8 @@ class IngestionService:
         self.loader = DocumentLoader()
         self.cleaner = TextCleaner()
         self.chunker = DocumentChunker()
+        self.embedding_service = EmbeddingService()
+        self.vector_store = VectorStore()
 
         self.logger = setup_logger()
 
@@ -43,6 +47,21 @@ class IngestionService:
             cleaned_text = self.cleaner.clean(text)
 
             chunks = self.chunker.split(cleaned_text)
+
+            embeddings = []
+
+            for chunk in chunks:
+
+                embedding = self.embedding_service.generate_embedding(
+                chunk)
+
+            embeddings.append(embedding)
+
+            stored_chunks = self.vector_store.add_document_chunks(
+            chunks=chunks,
+            embeddings=embeddings,
+            document_name=os.path.basename(file_path)
+            )
 
             self.logger.info(
                 "Document processed successfully. Chunks: %s",

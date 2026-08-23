@@ -6,3 +6,4 @@ logs/
 .pytest_cache/
 .vscode/
 data/uploads/*
+data/qdrant/*

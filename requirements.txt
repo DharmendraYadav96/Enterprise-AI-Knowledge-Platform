@@ -3,4 +3,5 @@ python-dotenv
 pytest
 pypdf
 python-docx
-
+sentence-transformers
+qdrant-client
