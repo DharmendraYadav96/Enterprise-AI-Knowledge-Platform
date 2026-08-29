@@ -6,6 +6,7 @@ from utils.logger import setup_logger
 class EmbeddingService:
 
     def __init__(self):
+
         self.logger = setup_logger()
 
         self.model = SentenceTransformer(
@@ -18,8 +19,12 @@ class EmbeddingService:
 
     def generate_embedding(self, text):
 
-        embedding = self.model.encode(
-            text
-        )
+        embedding = self.model.encode(text)
 
         return embedding.tolist()
+
+    def generate_embeddings(self, texts):
+
+        embeddings = self.model.encode(texts)
+
+        return embeddings.tolist()

@@ -1,6 +1,6 @@
 import os
 import uuid
-
+from config import Config
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance,
@@ -15,14 +15,23 @@ class VectorStore:
 
     COLLECTION_NAME = "enterprise_documents"
 
+    _client = None
+
     def __init__(self):
 
         self.logger = setup_logger()
 
-        self.client = QdrantClient(
-            path="data/qdrant"
-        )
+        if VectorStore._client is None:
 
+            VectorStore._client = QdrantClient(
+                path=Config.QDRANT_PATH
+            )
+
+            self.logger.info(
+                "Qdrant client initialized successfully."
+            )
+
+        self.client = VectorStore._client
         self._create_collection()
 
     def _create_collection(self):
@@ -85,3 +94,43 @@ class VectorStore:
         )
 
         return len(points)
+
+
+    def search(self, query_embedding, limit=5):
+
+        results = self.client.query_points(
+            collection_name=self.COLLECTION_NAME,
+            query=query_embedding,
+            limit=limit
+        )
+
+        return results.points
+
+    def get_all_documents(self):
+
+        results = self.client.scroll(
+            collection_name=self.COLLECTION_NAME,
+            limit=1000,
+            with_payload=True,
+            with_vectors=False
+        )
+
+        points = results[0]
+
+        documents = []
+
+        for point in points:
+
+            documents.append({
+                "id": point.id,
+                "text": point.payload.get(
+                    "text",
+                    ""
+                ),
+                "document_name": point.payload.get(
+                    "document_name",
+                    "Unknown"
+                )
+            })
+
+        return documents

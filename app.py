@@ -7,6 +7,7 @@ from utils.exceptions import ApplicationError
 from routes.document_routes import document_bp
 from routes.health_routes import health_bp
 from routes.ingestion_routes import ingestion_bp
+from routes.rag_routes import rag_bp
 
 
 def create_app():
@@ -18,6 +19,7 @@ def create_app():
     app.register_blueprint(health_bp)
     app.register_blueprint(document_bp)
     app.register_blueprint(ingestion_bp)
+    app.register_blueprint(rag_bp)
     
 
     @app.errorhandler(ApplicationError)
