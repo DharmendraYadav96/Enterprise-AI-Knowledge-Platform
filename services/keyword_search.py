@@ -35,6 +35,12 @@ class KeywordSearch:
                         "document_name",
                         "Unknown"
                     ),
+                    "document_id": document.get(
+                        "document_id"
+                    ),
+                    "chunk_id": document.get(
+                        "chunk_id"
+                    ),
                     "keyword_score": score
                 })
 

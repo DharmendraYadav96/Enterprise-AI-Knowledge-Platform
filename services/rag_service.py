@@ -20,6 +20,7 @@ class RAGService:
     def answer_question(
         self,
         question,
+        document_name = None,
         limit=5
     ):
 
@@ -39,7 +40,8 @@ class RAGService:
             # Step retrieval
             results = self.retrieval_service.retrieve(
                 query=question,
-                final_limit=limit
+                final_limit=limit,
+                document_name = document_name
             )
 
             if not results:
@@ -59,23 +61,28 @@ class RAGService:
 
             for result in results:
 
-                payload = result.get("payload", {})
-                text = payload.get("text", "")
-                
+                text = result.get(
+                "text",
+                ""
+                )
+
                 document_name = result.get(
-                    "document_name",
-                    "Unknown"
+                "document_name",
+                "Unknown"
                 )
 
                 context_parts.append(text)
 
                 sources.append({
-                    "document": document_name,
-                    "rerank_score": result.get(
-                        "rerank_score"
+                    "document": result.get(
+                        "document_name",
+                        "Unknown"
                     ),
-                    "vector_score": result.get(
-                        "vector_score"
+                    "chunk_id": result.get(
+                        "chunk_id"
+                    ),
+                    "score": result.get(
+                        "rerank_score"
                     )
                 })
 

@@ -15,152 +15,152 @@ class RAGNodes:
             api_key=Config.OPENAI_API_KEY
             )
 
-def analyze_query(self, state):
+    def analyze_query(self, state):
 
-    question = state["question"]
+        question = state["question"]
 
-    self.logger.info(
-        "Analyzing user question."
-    )
-
-    return {
-        "rewritten_question": question
-    }
-
-def retrieve_documents(self, state):
-
-    question = state["rewritten_question"]
-
-    self.logger.info(
-        "Retrieving documents for question."
-    )
-
-    documents = self.retrieval_service.retrieve(
-        query=question,
-        final_limit=5
-    )
-
-    return {
-        "documents": documents
-    }
-
-def evaluate_retrieval(self, state):
-
-    documents = state["documents"]
-
-    if not documents:
-
-        self.logger.warning(
-            "No relevant documents found."
+        self.logger.info(
+            "Analyzing user question."
         )
+
+        return {
+            "rewritten_question": question
+        }
+
+    def retrieve_documents(self, state):
+
+        question = state["rewritten_question"]
+
+        self.logger.info(
+            "Retrieving documents for question."
+        )
+
+        documents = self.retrieval_service.retrieve(
+            query=question,
+            final_limit=5
+        )
+
+        return {
+            "documents": documents
+        }
+
+    def evaluate_retrieval(self, state):
+
+        documents = state["documents"]
+
+        if not documents:
+
+            self.logger.warning(
+                "No relevant documents found."
+            )
+
+            return {
+                "retrieval_success": False
+            }
+
+        best_score = documents[0].get(
+            "rerank_score",
+            0
+        )
+
+        self.logger.info(
+            "Best retrieval score: %s",
+            best_score
+        )
+
+        if best_score > 0:
+
+            return {
+                "retrieval_success": True
+            }
 
         return {
             "retrieval_success": False
         }
 
-    best_score = documents[0].get(
-        "rerank_score",
-        0
-    )
+    def build_context(self, state):
 
-    self.logger.info(
-        "Best retrieval score: %s",
-        best_score
-    )
+        documents = state["documents"]
 
-    if best_score > 0:
+        context_parts = []
 
-        return {
-            "retrieval_success": True
-        }
+        for document in documents:
 
-    return {
-        "retrieval_success": False
-    }
+            text = document.get(
+                "text",
+                ""
+            )
 
-def build_context(self, state):
+            if text:
+                context_parts.append(text)
 
-    documents = state["documents"]
-
-    context_parts = []
-
-    for document in documents:
-
-        text = document.get(
-            "text",
-            ""
+        context = "\n\n".join(
+            context_parts
         )
 
-        if text:
-            context_parts.append(text)
+        self.logger.info(
+            "Context created from %s documents.",
+            len(context_parts)
+        )
 
-    context = "\n\n".join(
-        context_parts
-    )
+        return {
+            "context": context
+        }
 
-    self.logger.info(
-        "Context created from %s documents.",
-        len(context_parts)
-    )
+    def generate_answer(self, state):
 
-    return {
-        "context": context
-    }
+        question = state["rewritten_question"]
 
-def generate_answer(self, state):
+        context = state["context"]
 
-    question = state["rewritten_question"]
+        prompt = f"""
+    You are an enterprise knowledge assistant.
 
-    context = state["context"]
+    Answer the question using ONLY the
+    information provided in the context.
 
-    prompt = f"""
-You are an enterprise knowledge assistant.
+    If the answer cannot be found in the
+    context, say that you do not have
+    enough information.
 
-Answer the question using ONLY the
-information provided in the context.
+    Do not invent information.
 
-If the answer cannot be found in the
-context, say that you do not have
-enough information.
+    Context:
+    {context}
 
-Do not invent information.
+    Question:
+    {question}
 
-Context:
-{context}
+    Answer:
+    """
 
-Question:
-{question}
+        response = self.client.chat.completions.create(
 
-Answer:
-"""
+            model="gpt-4.1-mini",
 
-    response = self.client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are an enterprise "
+                        "knowledge assistant."
+                    )
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
 
-        model="gpt-4.1-mini",
+            temperature=0
+        )
 
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are an enterprise "
-                    "knowledge assistant."
-                )
-            },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
+        answer = response.choices[0].message.content
 
-        temperature=0
-    )
+        self.logger.info(
+            "Answer generated successfully."
+        )
 
-    answer = response.choices[0].message.content
-
-    self.logger.info(
-        "Answer generated successfully."
-    )
-
-    return {
-        "answer": answer
-    }
+        return {
+            "answer": answer
+        }

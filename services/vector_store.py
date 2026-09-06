@@ -64,20 +64,18 @@ class VectorStore:
         embeddings,
         document_name
     ):
-
+        document_id = str(uuid.uuid4())
         points = []
 
-        for chunk, embedding in zip(
-            chunks,
-            embeddings
-        ):
-
+        for index, chunk in enumerate(chunks):
             point = PointStruct(
                 id=str(uuid.uuid4()),
-                vector=embedding,
+                vector=embeddings,
                 payload={
                     "text": chunk,
-                    "document_name": document_name
+                    "document_name": document_name,
+                    "document_id": document_id,
+                    "chunk_id": index
                 }
             )
 
@@ -121,16 +119,22 @@ class VectorStore:
 
         for point in points:
 
-            documents.append({
-                "id": point.id,
-                "text": point.payload.get(
-                    "text",
-                    ""
-                ),
-                "document_name": point.payload.get(
-                    "document_name",
-                    "Unknown"
-                )
-            })
+                    documents.append({
+            "id": point.id,
+            "text": point.payload.get(
+                "text",
+                ""
+            ),
+            "document_name": point.payload.get(
+                "document_name",
+                "Unknown"
+            ),
+            "document_id": point.payload.get(
+                "document_id"
+            ),
+            "chunk_id": point.payload.get(
+                "chunk_id"
+            )
+        })
 
         return documents

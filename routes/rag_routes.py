@@ -32,7 +32,9 @@ def query_documents():
         )
 
     result = rag_service.answer_question(
-        question=data["question"]
+        question=data["question"],
+        
+        document_name = data["document_name"]
     )
 
     return jsonify({

@@ -24,7 +24,8 @@ class RetrievalService:
         query,
         vector_limit=5,
         keyword_limit=5,
-        final_limit=5
+        final_limit=5,
+        document_name=None
     ):
 
         self.logger.info(
@@ -52,19 +53,43 @@ class RetrievalService:
 
         for result in vector_results:
 
-            vector_documents.append({
+            document = {
                 "text": result.payload.get(
                     "text",
                     ""
                 ),
+
                 "document_name": result.payload.get(
                     "document_name",
                     "Unknown"
                 ),
+
+                "document_id": result.payload.get(
+                    "document_id"
+                ),
+
+                "chunk_id": result.payload.get(
+                    "chunk_id"
+                ),
+
                 "vector_score": float(
                     result.score
                 )
-            })
+            }
+
+            # Apply document filter
+
+            if document_name:
+
+                if (
+                    document["document_name"]
+                    != document_name
+                ):
+                    continue
+
+            vector_documents.append(
+                document
+            )
 
         # -------------------------
         # Keyword Search
@@ -75,8 +100,19 @@ class RetrievalService:
             .get_all_documents()
         )
 
+        if document_name:
+
+            all_documents = [
+                document
+                for document in all_documents
+                if document.get(
+                    "document_name"
+                ) == document_name
+            ]
+
         keyword_results = (
-            self.keyword_search.search(
+            self.keyword_search
+            .search(
                 query,
                 all_documents,
                 limit=keyword_limit
@@ -84,7 +120,7 @@ class RetrievalService:
         )
 
         # -------------------------
-        # Combine
+        # Combine Results
         # -------------------------
 
         combined = []
@@ -97,13 +133,18 @@ class RetrievalService:
             keyword_results
         )
 
-        # Remove duplicate chunks
+        # -------------------------
+        # Remove Duplicate Chunks
+        # -------------------------
 
         unique_documents = {}
 
         for document in combined:
 
-            text = document["text"]
+            text = document.get(
+                "text",
+                ""
+            )
 
             unique_documents[text] = document
 
