@@ -1,4 +1,5 @@
 from openai import OpenAI
+import time
 
 from services.retrieval_service import RetrievalService
 
@@ -11,6 +12,7 @@ class RAGService:
     def __init__(self, api_key):
 
         self.logger = setup_logger()
+
         self.retrieval_service = RetrievalService()
 
         self.client = OpenAI(
@@ -20,15 +22,19 @@ class RAGService:
     def answer_question(
         self,
         question,
-        document_name = None,
+        document_name=None,
         limit=5
     ):
 
         if not question or not question.strip():
+
             raise ApplicationError(
                 "Question cannot be empty.",
                 400
             )
+
+        # Start timer for this RAG request
+        start_time = time.perf_counter()
 
         try:
 
@@ -37,14 +43,43 @@ class RAGService:
                 question
             )
 
-            # Step retrieval
+            # -------------------------
+            # Step 1: Retrieval
+            # -------------------------
+
+            retrieval_start = time.perf_counter()
+
             results = self.retrieval_service.retrieve(
                 query=question,
                 final_limit=limit,
-                document_name = document_name
+                document_name=document_name
             )
 
+            retrieval_time = (
+                time.perf_counter()
+                - retrieval_start
+            )
+
+            self.logger.info(
+                "Retrieval completed in %.2f seconds.",
+                retrieval_time
+            )
+
+            # -------------------------
+            # No Results
+            # -------------------------
+
             if not results:
+
+                total_time = (
+                    time.perf_counter()
+                    - start_time
+                )
+
+                self.logger.info(
+                    "RAG request completed in %.2f seconds.",
+                    total_time
+                )
 
                 return {
                     "answer": (
@@ -54,7 +89,9 @@ class RAGService:
                     "sources": []
                 }
 
-            # Step 3: Build context
+            # -------------------------
+            # Step 2: Build Context
+            # -------------------------
 
             context_parts = []
             sources = []
@@ -62,13 +99,8 @@ class RAGService:
             for result in results:
 
                 text = result.get(
-                "text",
-                ""
-                )
-
-                document_name = result.get(
-                "document_name",
-                "Unknown"
+                    "text",
+                    ""
                 )
 
                 context_parts.append(text)
@@ -90,15 +122,39 @@ class RAGService:
                 context_parts
             )
 
-            # Step 4: Generate answer
+            # -------------------------
+            # Step 3: Generate Answer
+            # -------------------------
+
+            generation_start = time.perf_counter()
 
             answer = self._generate_answer(
                 question,
                 context
             )
 
+            generation_time = (
+                time.perf_counter()
+                - generation_start
+            )
+
             self.logger.info(
-                "RAG answer generated successfully."
+                "Answer generation completed in %.2f seconds.",
+                generation_time
+            )
+
+            # -------------------------
+            # Total RAG Time
+            # -------------------------
+
+            total_time = (
+                time.perf_counter()
+                - start_time
+            )
+
+            self.logger.info(
+                "RAG request completed in %.2f seconds.",
+                total_time
             )
 
             return {
@@ -107,6 +163,7 @@ class RAGService:
             }
 
         except ApplicationError:
+
             raise
 
         except Exception as error:

@@ -1,0 +1,21 @@
+[
+    {
+        "question": "What is the annual leave policy?",
+        "expected_keywords": [
+            "leave"
+        ]
+    },
+    {
+        "question": "What is the employee reimbursement policy?",
+        "expected_keywords": [
+            "reimbursement"
+        ]
+    },
+    {
+        "question": "What are the working hours?",
+        "expected_keywords": [
+            "working",
+            "hours"
+        ]
+    }
+]

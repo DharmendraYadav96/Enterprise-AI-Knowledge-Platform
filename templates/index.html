@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Enterprise AI Knowledge Platform
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for(
+            'static',
+            filename='css/style.css'
+        ) }}"
+    >
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+
+    <header class="header">
+
+        <div>
+
+            <h1>
+                Enterprise AI Knowledge Platform
+            </h1>
+
+            <p>
+                AI-powered enterprise document assistant
+            </p>
+
+        </div>
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            System Online
+
+        </div>
+
+    </header>
+
+
+    <!-- Upload Section -->
+
+    <section class="card">
+
+        <h2>
+            Document Management
+        </h2>
+
+        <p class="subtitle">
+            Upload a document to add it to the
+            knowledge base.
+        </p>
+
+
+        <div class="upload-area">
+
+            <input
+                type="file"
+                id="documentFile"
+                accept=".pdf,.docx,.txt"
+            >
+
+            <button
+                id="uploadButton"
+                onclick="uploadDocument()"
+            >
+                Upload Document
+            </button>
+
+        </div>
+
+
+        <div
+            id="uploadStatus"
+            class="message hidden"
+        ></div>
+
+    </section>
+
+
+    <!-- Processing Section -->
+
+    <section class="card">
+
+        <h2>
+            Process Document
+        </h2>
+
+        <p class="subtitle">
+            Extract text, create chunks and generate
+            embeddings.
+        </p>
+
+
+        <div class="form-row">
+
+            <input
+                type="text"
+                id="processDocumentName"
+                placeholder="Document name"
+            >
+
+            <button
+                onclick="processDocument()"
+            >
+                Process Document
+            </button>
+
+        </div>
+
+
+        <div
+            id="processStatus"
+            class="message hidden"
+        ></div>
+
+    </section>
+
+
+    <!-- Question Section -->
+
+    <section class="card">
+
+        <h2>
+            Ask Your Documents
+        </h2>
+
+        <p class="subtitle">
+            Ask questions using natural language.
+        </p>
+
+
+        <textarea
+            id="question"
+            placeholder="Example: What is the leave policy?"
+        ></textarea>
+
+
+        <input
+            type="text"
+            id="documentName"
+            placeholder="Optional document name"
+        >
+
+
+        <button
+            class="ask-button"
+            onclick="askQuestion()"
+        >
+            Ask Question
+        </button>
+
+
+        <div
+            id="questionStatus"
+            class="message hidden"
+        ></div>
+
+
+        <!-- Answer -->
+
+        <div
+            id="answerSection"
+            class="result hidden"
+        >
+
+            <h3>
+                Answer
+            </h3>
+
+            <div
+                id="answer"
+                class="answer-box"
+            ></div>
+
+
+            <h3>
+                Sources
+            </h3>
+
+            <div
+                id="sources"
+            ></div>
+
+        </div>
+
+    </section>
+
+
+</div>
+
+
+<script
+    src="{{ url_for(
+        'static',
+        filename='js/app.js'
+    ) }}"
+></script>
+
+</body>
+
+</html>

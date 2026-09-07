@@ -9,6 +9,7 @@ from routes.health_routes import health_bp
 from routes.ingestion_routes import ingestion_bp
 from routes.rag_routes import rag_bp
 from routes.agent_routes import agent_bp
+from routes.frontend_routes import frontend_bp
 
 
 def create_app():
@@ -22,6 +23,7 @@ def create_app():
     app.register_blueprint(ingestion_bp)
     app.register_blueprint(rag_bp)
     app.register_blueprint(agent_bp)
+    app.register_blueprint(frontend_bp)
     
 
     @app.errorhandler(ApplicationError)
