@@ -1,15 +1,18 @@
+let uploadedFilePath = null;
+let uploadedDocumentName = null;
+
+
+// =========================
+// UPLOAD DOCUMENT
+// =========================
+
 async function uploadDocument() {
 
     const fileInput =
-        document.getElementById(
-            "documentFile"
-        );
+        document.getElementById("documentFile");
 
     const status =
-        document.getElementById(
-            "uploadStatus"
-        );
-
+        document.getElementById("uploadStatus");
 
     if (!fileInput.files.length) {
 
@@ -21,15 +24,12 @@ async function uploadDocument() {
         return;
     }
 
-
-    const formData =
-        new FormData();
+    const formData = new FormData();
 
     formData.append(
         "file",
         fileInput.files[0]
     );
-
 
     try {
 
@@ -38,29 +38,33 @@ async function uploadDocument() {
             "Uploading document..."
         );
 
+        const response = await fetch(
+            "/api/documents/upload",
+            {
+                method: "POST",
+                body: formData
+            }
+        );
 
-        const response =
-            await fetch(
-                "/api/documents/upload",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-
-        const data =
-            await response.json();
-
+        const data = await response.json();
 
         if (!response.ok) {
 
             throw new Error(
-                data.message ||
-                "Upload failed."
+                data.message || "Upload failed."
             );
         }
 
+        /*
+         * Store the exact path returned by backend.
+         * Do not create the path manually in JavaScript.
+         */
+        uploadedFilePath =
+            data.data.file_path;
+
+        uploadedDocumentName =
+            data.data.document_name ||
+            fileInput.files[0].name;
 
         showMessage(
             status,
@@ -68,49 +72,46 @@ async function uploadDocument() {
             "Document uploaded successfully."
         );
 
-
+        // Display the document name only
         document.getElementById(
             "processDocumentName"
-        ).value =
-            fileInput.files[0].name;
+        ).value = uploadedDocumentName;
 
+        console.log(
+            "Uploaded file path:",
+            uploadedFilePath
+        );
 
     } catch (error) {
+
+        console.error("Upload error:", error);
 
         showMessage(
             status,
             error.message
         );
-
     }
-
 }
 
 
+// =========================
+// PROCESS DOCUMENT
+// =========================
+
 async function processDocument() {
 
-    const documentName =
-        document.getElementById(
-            "processDocumentName"
-        ).value;
-
-
     const status =
-        document.getElementById(
-            "processStatus"
-        );
+        document.getElementById("processStatus");
 
-
-    if (!documentName) {
+    if (!uploadedFilePath) {
 
         showMessage(
             status,
-            "Please enter a document name."
+            "Please upload a document first."
         );
 
         return;
     }
-
 
     try {
 
@@ -119,29 +120,28 @@ async function processDocument() {
             "Processing document..."
         );
 
+        const response = await fetch(
+            "/api/documents/process",
+            {
+                method: "POST",
 
-        const response =
-            await fetch(
-                "/api/documents/process",
-                {
-                    method: "POST",
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                body: JSON.stringify({
+                    file_path: uploadedFilePath
+                })
+            }
+        );
 
-                    body: JSON.stringify({
-                        document_name:
-                            documentName
-                    })
-                }
-            );
+        const data = await response.json();
 
-
-        const data =
-            await response.json();
-
+        console.log(
+            "Process response:",
+            data
+        );
 
         if (!response.ok) {
 
@@ -151,25 +151,30 @@ async function processDocument() {
             );
         }
 
-
         showMessage(
             status,
             data.message ||
             "Document processed successfully."
         );
 
-
     } catch (error) {
+
+        console.error(
+            "Processing error:",
+            error
+        );
 
         showMessage(
             status,
             error.message
         );
-
     }
-
 }
 
+
+// =========================
+// ASK QUESTION
+// =========================
 
 async function askQuestion() {
 
@@ -178,24 +183,20 @@ async function askQuestion() {
             "question"
         ).value.trim();
 
-
     const documentName =
         document.getElementById(
             "documentName"
         ).value.trim();
-
 
     const status =
         document.getElementById(
             "questionStatus"
         );
 
-
     const answerSection =
         document.getElementById(
             "answerSection"
         );
-
 
     if (!question) {
 
@@ -207,7 +208,6 @@ async function askQuestion() {
         return;
     }
 
-
     try {
 
         showMessage(
@@ -215,11 +215,9 @@ async function askQuestion() {
             "Searching knowledge base..."
         );
 
-
         const requestBody = {
             question: question
         };
-
 
         if (documentName) {
 
@@ -227,29 +225,33 @@ async function askQuestion() {
                 documentName;
         }
 
+        console.log(
+            "RAG request body:",
+            requestBody
+        );
 
-        const response =
-            await fetch(
-                "/api/rag/query",
-                {
-                    method: "POST",
+        const response = await fetch(
+            "/api/rag/query",
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
 
-                    body:
-                        JSON.stringify(
-                            requestBody
-                        )
-                }
-            );
+                body: JSON.stringify(
+                    requestBody
+                )
+            }
+        );
 
+        const data = await response.json();
 
-        const data =
-            await response.json();
-
+        console.log(
+            "RAG response:",
+            data
+        );
 
         if (!response.ok) {
 
@@ -259,10 +261,7 @@ async function askQuestion() {
             );
         }
 
-
-        const result =
-            data.data;
-
+        const result = data.data || {};
 
         document.getElementById(
             "answer"
@@ -270,47 +269,44 @@ async function askQuestion() {
             result.answer ||
             "No answer generated.";
 
-
         displaySources(
             result.sources || []
         );
 
-
         answerSection.classList.remove(
             "hidden"
         );
-
 
         showMessage(
             status,
             "Answer generated successfully."
         );
 
-
     } catch (error) {
+
+        console.error(
+            "Question error:",
+            error
+        );
 
         showMessage(
             status,
             error.message
         );
-
     }
-
 }
 
 
-function displaySources(
-    sources
-) {
+// =========================
+// DISPLAY SOURCES
+// =========================
+
+function displaySources(sources) {
 
     const container =
-        document.getElementById(
-            "sources"
-        );
-
+        document.getElementById("sources");
 
     container.innerHTML = "";
-
 
     if (!sources.length) {
 
@@ -320,48 +316,35 @@ function displaySources(
         return;
     }
 
+    sources.forEach(function(source) {
 
-    sources.forEach(
-        function(source) {
+        const div =
+            document.createElement("div");
 
-            const div =
-                document.createElement(
-                    "div"
-                );
+        div.className = "source";
 
+        div.textContent =
+            `${source.document_name ||
+              source.document ||
+              "Unknown document"} ` +
+            `- Chunk ${source.chunk_id ??
+              "N/A"} ` +
+            `- Score ${source.score ??
+              "N/A"}`;
 
-            div.className =
-                "source";
+        container.appendChild(div);
 
-
-            div.textContent =
-                `${source.document || "Unknown document"} `
-                +
-                `- Chunk ${source.chunk_id ?? "N/A"} `
-                +
-                `- Score ${source.score ?? "N/A"}`;
-
-
-            container.appendChild(
-                div
-            );
-
-        }
-    );
-
+    });
 }
 
 
-function showMessage(
-    element,
-    message
-) {
+// =========================
+// STATUS MESSAGE
+// =========================
 
-    element.textContent =
-        message;
+function showMessage(element, message) {
 
-    element.classList.remove(
-        "hidden"
-    );
+    element.textContent = message;
 
+    element.classList.remove("hidden");
 }
