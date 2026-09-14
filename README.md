@@ -12,9 +12,9 @@ The application combines document processing, semantic search, hybrid retrieval,
 
 ## Live Demo
 
-**Application:** [Deploying...]
+**Application:** Link will be provided soon...
 
-**Portfolio:** [[Visit my AI Engineer Portfolio](https://portfolio-webiste-kf65.onrender.com/)]
+**Portfolio:** [Visit my AI Engineer Portfolio](https://portfolio-webiste-kf65.onrender.com/)
 
 > The demo is hosted on Render. The first request may take longer if the service has been inactive.
 
@@ -387,7 +387,8 @@ This project was built to demonstrate practical experience in:
 ## Author
 
 **Dharmendra Yadav**
+
 AI Engineer | Python | RAG | LangChain | LangGraph | MCP
 
-* [[Portfolio](https://portfolio-webiste-kf65.onrender.com/)]
-* [[LinkedIn](https://www.linkedin.com/in/dharmendrayadav1996/)]
+* [Portfolio](https://portfolio-webiste-kf65.onrender.com/)
+* [LinkedIn](https://www.linkedin.com/in/dharmendrayadav1996/)
