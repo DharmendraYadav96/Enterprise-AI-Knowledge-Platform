@@ -4,7 +4,7 @@ An enterprise-focused document intelligence platform that enables users to uploa
 
 The application combines document processing, semantic search, hybrid retrieval, reranking, and LLM-based response generation to provide answers grounded in uploaded documents.
 
-![Enterprise AI Knowledge Platform](docs/screenshots/frontend.png)
+![Enterprise AI Knowledge Platform](docs/screenshots/dashboard.png)
 
 ## Technology Stack
 
